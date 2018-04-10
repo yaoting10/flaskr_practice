@@ -8,7 +8,45 @@ import flaskr
 import unittest
 import tempfile
 
-class FlaskrTestCase(unittest.TestCase):
 
+class FlaskrTestCase(unittest.TestCase):
     def setUp(self):
-        self.db_fd, flaskr.app.config['DATABASE']
+        self.db_fd, flaskr.app.config['DATABASE'] = tempfile.mkstemp()
+        flaskr.app.config['TESTING'] = True
+        self.app = flaskr.app.test_client()
+        flaskr.init_db()
+
+    def tearDown(self):
+        os.close(self.db_fd)
+        os.unlink(flaskr.app.config['DATABASE'])
+
+    def test_login_logout(self):
+        response = self.login('admin', 'default')
+        assert 'Invalid password' in response.data
+        # self.assertEqual('Invalid password', response.data)
+    #     rv = self.logout()
+    #     assert 'You were logged out' in rv.data
+    #     rv = self.login('adminx', 'default')
+    #     assert 'Invalid username' in rv.data
+    #     rv = self.login('admin', 'defaultx')
+    #     assert 'Invalid password' in rv.data
+
+    def test_empty_db(self):
+        response = self.app.get('/')
+        # self.assertTrue(response.status_code==200)
+        self.assertTrue(response.status_code == 200)
+        self.assertTrue(response.data == b'No entries here so far')
+
+    def login(self, username, password):
+        return self.app.post('/login', data=dict(
+            username=username,
+            password=password
+        ), follow_redirects=True)
+
+    def logout(self):
+        return self.app.get('/logout', follow_redirects=True)
+
+
+
+if __name__ == '__main__':
+    unittest.main()

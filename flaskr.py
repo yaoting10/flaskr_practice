@@ -22,7 +22,8 @@ app.config['SECRET_KEY'] = '123'
 def show_entries():
     cur = engine.execute('select title, text from entry order by id desc')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template("show_entries.html", entries=entries)
+    return 'No entries here so far'
+    # return render_template("show_entries.html", entries=entries)
 
 
 @app.route('/add', methods=['POST'])
