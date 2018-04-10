@@ -5,7 +5,7 @@ from flask.json import jsonify
 __author__ = 'Tim Yao'
 
 from com.util.JsonUtil import to_json, json_to_dict
-from flask import Flask, json, session, abort, request, flash, redirect, url_for
+from flask import Flask, json, session, abort, request, flash, url_for, redirect
 
 from flask import render_template, g, app, Flask
 
@@ -57,6 +57,34 @@ def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('show_entries'))
+
+
+@app.route('/redirect_to')
+def redirect_to():
+    flash('New entry was successfully posted')
+    return redirect('/redirect_error')
+
+
+@app.route('/redirect_error')
+def redirect_error():
+    abort(404)
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('page_not_found.html'), 404
+
+
+@app.template_filter('reverse')
+def reverse_filter(s):
+    return s[::-1]
+
+
+@app.context_processor
+def utility_processor():
+    def format_price(amount, currency=u'¥'):
+        return u'{0:.3f}{1}'.format(amount, currency)
+    return dict(format_price=format_price)
 
 
 if __name__ == '__main__':

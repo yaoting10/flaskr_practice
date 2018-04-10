@@ -16,7 +16,6 @@ class User(Base):
         return '<User %r>' % (self.name)
 
 
-
 class Entries(Base):
     __tablename__ = 'entry'
     id = Column(Integer, primary_key=True)

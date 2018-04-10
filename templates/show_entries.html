@@ -14,8 +14,11 @@
   <ul class=entries>
   {% for entry in entries %}
     <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+    <li><h2>{{ entry.title }}</h2>{{ entry|tojson|safe }}
   {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
   {% endfor %}
+  <h2>{{ format_price(0.33) }}</h2>
+
   </ul>
 {% endblock %}
