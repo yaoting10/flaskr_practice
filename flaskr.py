@@ -5,48 +5,58 @@ from flask.json import jsonify
 __author__ = 'Tim Yao'
 
 from com.util.JsonUtil import to_json, json_to_dict
-from flask import Flask, json
+from flask import Flask, json, session, abort, request, flash, redirect, url_for
 
 from flask import render_template, g, app, Flask
 
 from com.orm.models import User, Entries
-from database import engine, db_session, cache
+from database import engine, db_session, cache, init_db
 
 app = Flask(__name__)
+app.config['USERNAME'] = 'admin'
+app.config['PASSWORD'] = 'admin'
+app.config['SECRET_KEY'] = '123'
 
 
 @app.route('/')
 def show_entries():
-    r = engine.execute('select * from entry e left join user u on e.id =u.id')
-    print(list(r))
-
-    d = engine.execute('select * from entry where id = 1').first()
-    print(dict(d).get("title"))
-    return "native sql"
+    cur = engine.execute('select title, text from entry order by id desc')
+    entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
+    return render_template("show_entries.html", entries=entries)
 
 
-@app.route('/add')
-def add_entries():
-    entries = User.query.filter_by(id=1).first()
-    print(entries.id)
-    e = Entries("title2", "text2")
-    u = User('admin3')
-    db_session.add(e)
-    db_session.add(u)
+@app.route('/add', methods=['POST'])
+def add_entry():
+    if not session.get('logged_in'):
+        abort(401)
+    engine.execute(
+        "INSERT INTO entry ( title, text) values ( %s, %s)", (request.form['title'], request.form['text'])
+    )
     db_session.commit()
-    return "mapper SQL"
+    flash('New entry was successfully posted')
+    return redirect(url_for('show_entries'))
 
 
-@app.route('/cache')
-def get_cache():
-    ticket = cache.get("2c9284915e0e9d34015e0ea082730006").decode('utf-8')
-    print(json_to_dict(ticket).get("roleName"))
-    return "cache redis"
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != app.config['USERNAME']:
+            error = 'Invalid username'
+        elif request.form['password'] != app.config['PASSWORD']:
+            error = 'Invalid password'
+        else:
+            session['logged_in'] = True
+            flash('You were logged in')
+            return redirect(url_for('show_entries'))
+    return render_template('login.html', error=error)
 
-# @app.teardown_request
-# def shutdown_session(exception=None):
-#     db_session.remove()
 
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('You were logged out')
+    return redirect(url_for('show_entries'))
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.contrib.cache import RedisCache
 
 
-engine = create_engine('mysql+pymysql://root:123456@127.0.0.1:3306/test', convert_unicode=True)
+engine = create_engine('mysql+pymysql://root:123456@127.0.0.1:3306/test', convert_unicode=True, connect_args={'charset':'utf8'})
 metadata = MetaData(bind=engine)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
