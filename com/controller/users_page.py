@@ -5,6 +5,7 @@ from jinja2 import TemplateNotFound
 
 __author__ = 'Tim Yao'
 
+
 user = Blueprint('user', __name__, template_folder='templates')
 
 
@@ -12,7 +13,6 @@ user = Blueprint('user', __name__, template_folder='templates')
 @user.route('/<page>')
 def show(page):
     try:
-        return render_template('pages/%s.html' % page)
-
+        return render_template('users/detail.html')
     except TemplateNotFound:
         abort(404)

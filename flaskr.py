@@ -14,21 +14,18 @@ app = Flask(__name__)
 app.config['USERNAME'] = 'admin'
 app.config['PASSWORD'] = 'admin'
 app.config['SECRET_KEY'] = '123'
+app.register_blueprint(user, url_prefix='/user')
 
-app.register_blueprint(user)
 
-
-@app.route('/')
-def show_entries():
+@app.route('/<model>/')
+def show_entries(model):
     cur = engine.execute('select title, text from entry order by id desc')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
     return 'No entries here so far'
     # return render_template("show_entries.html", entries=entries)
 
 
-@app.errorhandler(404)
-def page_not_found(error):
-    return render_template('page_not_found.html'), 404
+
 
 
 @app.template_filter('reverse')

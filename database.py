@@ -11,9 +11,7 @@ from werkzeug.contrib.cache import RedisCache
 
 engine = create_engine('mysql://root:123456@localhost:3306/test', convert_unicode=True, pool_pre_ping=True, pool_recycle=300, echo=True, connect_args={'charset':'utf8'})
 metadata = MetaData(bind=engine)
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
+db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 Base = declarative_base()
 Base.query = db_session.query_property()
 cache = RedisCache(host="t.dev.mattbaby.com", port=6379, password="hmp_uat")
